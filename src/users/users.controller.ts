@@ -1,4 +1,10 @@
-import { Controller, Get, ParseIntPipe, NotFoundException, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  ParseIntPipe,
+  NotFoundException,
+  Param,
+} from '@nestjs/common';
 import { UsersService, User } from './users.service';
 
 @Controller('users')
