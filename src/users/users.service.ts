@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 export interface User {
   id: number;
@@ -8,14 +9,21 @@ export interface User {
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [
-    { id: 1, name: 'Saurabh', email: 'saurabh@example.com' },
-    { id: 2, name: 'Bhargav', email: 'bhargav@example.com' },
-  ];
-  getUsers() {
-    return this.users;
+  constructor(private prisma: PrismaService) {}
+
+  async createUser(data: { name: string; email: string; password: string }) {
+    return await this.prisma.user.create({
+      data,
+    });
   }
-  getUserById(id: number): User | undefined {
-    return this.users.find((user) => user.id === id);
+
+  async getUsers() {
+    return await this.prisma.user.findMany();
+  }
+
+  async getUserById(id: string) {
+    return await this.prisma.user.findUnique({
+      where: { id },
+    });
   }
 }
