@@ -7,12 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   email       String   @unique
   password    String
   phone       String?
+  role        Role     @default(USER)
   countryCode String?
   isDeleted   Boolean  @default(false)
   isBlocked   Boolean  @default(false)
