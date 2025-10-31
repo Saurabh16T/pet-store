@@ -6,7 +6,7 @@ import { HashService } from '../src/common/hash.service';
 const hashService = new HashService();
 
 async function main() {
-  const mongoUrl = process.env.DATABASE_URL!;
+  const mongoUrl = process.env.DB_URL!;
   const dbName = process.env.DB_NAME!;
 
   if (!mongoUrl || !dbName) {
