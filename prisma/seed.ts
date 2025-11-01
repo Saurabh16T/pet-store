@@ -22,35 +22,22 @@ async function main() {
   const now = new Date();
 
   // Hash passwords separately
-  const hashedAlice = await hashService.hash('password123');
-  const hashedBob = await hashService.hash('secure456');
+  const hashedPassword = await hashService.hash(process.env.DEMO_PASSWORD!);
 
   await users.updateOne(
-    { email: 'alice@example.com' },
-    { 
-      $setOnInsert: { 
-        name: 'Alice Johnson', 
-        password: hashedAlice, 
-        role: 'USER', 
-        createdAt: now, 
-        updatedAt: now 
-      } 
+    { email: 'admin.developer@yopmail.com' },
+    {
+      $setOnInsert: {
+        name: 'Saurabh Tiwari',
+        password: hashedPassword,
+        role: 'ADMIN',
+        isDeleted: false,
+        isBlocked: false,
+        createdAt: now,
+        updatedAt: now,
+      },
     },
-    { upsert: true }
-  );
-
-  await users.updateOne(
-    { email: 'bob@example.com' },
-    { 
-      $setOnInsert: { 
-        name: 'Bob Smith', 
-        password: hashedBob, 
-        role: 'USER', 
-        createdAt: now, 
-        updatedAt: now 
-      } 
-    },
-    { upsert: true }
+    { upsert: true },
   );
 
   console.log('✅ Users seeded successfully!');
