@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '@prisma/client';
+import { User, Prisma } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { RegisterDto } from '../auth/dto/register.dto';
 import { HashService } from '../common/hash.service';
 
 @Injectable()
@@ -78,5 +79,27 @@ export class UsersService {
     return await this.prisma.user.findUnique({
       where: { id },
     });
+  }
+
+  // auth service function
+  async register(data: RegisterDto): Promise<User> {
+    let userQry: any = { isDeleted: false };
+    if (data.email) {
+      userQry.email = data.email;
+    } else if(data.phone) {
+      userQry.phone = data.phone;
+      userQry.countryCode = data.countryCode;
+    }
+    const user = await this.findUser(userQry);
+    if (user) {
+      throw new NotFoundException(`User already exist`);
+    }
+    return await this.prisma.user.create({
+      data,
+    });
+  }
+
+  async findUser(where: Prisma.UserWhereInput): Promise<User | null> {
+    return this.prisma.user.findFirst({ where });
   }
 }

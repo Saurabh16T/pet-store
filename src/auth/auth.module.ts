@@ -18,9 +18,9 @@ import { CommonModule } from '../common/common.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-    secret: configService.get('JWT_SECRET') || 'defaultsecret',
-    signOptions: { expiresIn: 86400 }, // 1 day in seconds
-  }),
+        secret: configService.get('JWT_SECRET') || 'defaultsecret',
+        signOptions: { expiresIn: 86400 }, // 1 day in seconds
+      }),
     }),
   ],
   controllers: [AuthController],

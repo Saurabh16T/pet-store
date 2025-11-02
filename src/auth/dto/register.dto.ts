@@ -2,6 +2,7 @@ import { Role } from '@prisma/client';
 import { IsString, IsEmail, MinLength, IsOptional, IsEnum } from 'class-validator';
 
 export class RegisterDto {
+  @IsOptional()
   @IsString()
   name: string;
 
@@ -23,4 +24,4 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-}
+};

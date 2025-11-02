@@ -2,8 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { HashService } from 'src/common/hash.service';
-import { RegisterDto } from './dto/register.dto/register.dto';
-
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -14,25 +14,32 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const hashedPassword = await this.hashService.hash(dto.password);
-    return this.userService.createUser({ ...dto, password: hashedPassword });
+    return this.userService.register({ ...dto, password: hashedPassword });
   }
 
-//   async login(dto: LoginDto) {
-//     const user = await this.userService.findByEmail(dto.email);
-//     if (!user) throw new UnauthorizedException('Invalid credentials');
+  async login(dto: LoginDto) {
+    const user = await this.userService.findUser({
+      email: dto.email,
+      isDeleted: false,
+    });
+    if (!user) throw new UnauthorizedException('Invalid credentials');
 
-//     const isPasswordValid = await this.hashService.comparePassword(
-//       dto.password,
-//       user.password,
-//     );
+    const isPasswordValid = await this.hashService.compare(
+      dto.password,
+      user.password,
+    );
 
-//     if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Invalid credentials');
 
-//     const payload = { sub: user.id, email: user.email };
-//     return { access_token: this.jwtService.sign(payload) };
-//   }
+    const payload = { sub: user.id, email: user.email };
+    return { access_token: this.jwtService.sign(payload) };
+  }
 
-//   async getProfile(user: any) {
-//     return this.userService.findById(user.userId);
-//   }
+  async getProfile(user: any) {
+    return this.userService.findUser({
+      id: user.userId,
+      isDeleted: false,
+    });
+  }
 }
