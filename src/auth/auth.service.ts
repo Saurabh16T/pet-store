@@ -1,9 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
+import { User } from '@prisma/client';
 import { HashService } from 'src/common/hash.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -32,14 +34,18 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-    const payload = { sub: user.id, email: user.email };
-    return { access_token: this.jwtService.sign(payload) };
+    const payload = { userId: user.id };
+    return { ...user, access_token: this.jwtService.sign(payload) };
   }
 
-  async getProfile(user: any) {
+  async getProfile(user: User) {
     return this.userService.findUser({
-      id: user.userId,
+      id: user.id,
       isDeleted: false,
     });
+  }
+
+  async updateProfile(user: User, body: UpdateProfileDto) {
+    return this.userService.updateUser(user.id, body);
   }
 }
