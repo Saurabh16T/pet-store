@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
 model User {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
@@ -24,5 +19,26 @@ model User {
   isBlocked   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // This is the reverse relation
+  sessions    Session[] @relation("UserSessions")
 }
+
+model Session {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  deviceType  String?
+  deviceToken String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Define relation in Session model with explicit one-way relation
+  user        User     @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
 

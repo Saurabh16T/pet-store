@@ -1,11 +1,13 @@
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from '../src/app.module';
 import { MongoClient } from 'mongodb';
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { HashService } from '../src/common/hash.service';
-
-const hashService = new HashService();
+import { CommonService } from '../src/common/common.service';
 
 async function main() {
+  const app = await NestFactory.createApplicationContext(AppModule);
+  const commonService = app.get(CommonService);
   const mongoUrl = process.env.DB_URL!;
   const dbName = process.env.DB_NAME!;
 
@@ -22,7 +24,7 @@ async function main() {
   const now = new Date();
 
   // Hash passwords separately
-  const hashedPassword = await hashService.hash(process.env.DEMO_PASSWORD!);
+  const hashedPassword = await commonService.hash(process.env.DEMO_PASSWORD!);
 
   await users.updateOne(
     { email: 'admin.developer@yopmail.com' },

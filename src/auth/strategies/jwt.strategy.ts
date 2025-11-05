@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
 
 interface JwtPayload {
+  sessionId: string;
   userId: string;
   role?: string;
 }
@@ -21,13 +22,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
+    const session = await this.userService.getSessionById(payload.sessionId);
+    console.log('session: ', session);
+    if (!session) {
+      throw new UnauthorizedException('Session not found');
+    }
     const user = await this.userService.findUser({
-      id: payload.userId,
+      id: session?.userId,
       isDeleted: false,
     });
     if (!user) {
       throw new UnauthorizedException('Account not found');
     }
+    console.log('user: ', user);
 
     if (user.isBlocked) {
       throw new UnauthorizedException('User is blocked');
