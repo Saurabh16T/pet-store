@@ -87,4 +87,8 @@ export class AuthService {
   async updateProfile(user: User, body: UpdateProfileDto) {
     return this.userService.updateUser(user.id, body);
   }
+
+  async logout(sessionId: string) {
+    return this.userService.deleteSession(sessionId);
+  }
 }

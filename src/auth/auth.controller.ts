@@ -6,6 +6,7 @@ import {
   Get,
   Req,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -43,5 +44,14 @@ export class AuthController {
   updateProfile(@Req() req: Request, @Body() body: UpdateProfileDto) {
     const user = req.user as User;
     return this.authService.updateProfile(user, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('logout')
+  Logout(@Req() req: Request) {
+    const user = req.user as User & { sessionId: string };
+    this.authService.logout(user.sessionId);
+    return new ApiResponse(200, 'Logout success', null);
+    // return this.authService.logout(user.sessionId);
   }
 }

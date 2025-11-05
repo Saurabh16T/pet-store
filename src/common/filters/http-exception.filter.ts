@@ -1,17 +1,31 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiResponse } from '../dto/response.dto';  // Your standardized response DTO
+import { ApiResponse } from '../dto/response.dto'; // Your standardized response DTO
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const status = exception.getStatus();
-    const exceptionResponse = exception.getResponse();
+    let status = 500; // Default to Internal Server Error
+    let errorMessage = 'Something went wrong';
 
-    let message = '';
-    let error = '';
+    // Check if the exception is an instance of HttpException
+    if (exception instanceof HttpException) {
+      status = exception.getStatus(); // Get status if it's an HttpException
+      
+      // If the exception response is an object, we need to extract the message
+      const responseMessage = exception.getResponse();
+      if (typeof responseMessage === 'object' && 'message' in responseMessage) {
+        errorMessage = (responseMessage as any).message;
+      } else {
+        // If it's a string or other object, use it as the error message
+        errorMessage = typeof responseMessage === 'string' ? responseMessage : 'An error occurred';
+      }
+    } else if (exception instanceof Error) {
+      // Handle other types of error like JavaScript errors or Prisma errors
+      errorMessage = exception.message || 'An error occurred';
+    }
 
     // Standardized messages for common HTTP status codes
     const statusMessages: Record<number, string> = {
@@ -24,30 +38,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       503: 'Service Unavailable',
     };
 
-    // Determine the general message based on status code
-    message = statusMessages[status] || 'Something went wrong';
-
-    // Check if exceptionResponse is an object and has a message
-    if (typeof exceptionResponse === 'object') {
-      if ('message' in exceptionResponse) {
-        // Default to the provided message, or use 'Something went wrong'
-        error = (exceptionResponse as any).message || 'Something went wrong';
-      } else {
-        // If no message field is present, treat the object as a generic error
-        error = 'An error occurred';
-      }
-    } else {
-      // If it's a string (the exception message), use it as the error
-      error = exceptionResponse as string || 'An error occurred';
-    }
-
-    // Now we have the message as the general error message (e.g., "Bad Request")
-    // and the error as the specific message or error description (e.g., "User not found")
+    // Get the general message based on the status code
+    const message = statusMessages[status] || 'Something went wrong';
 
     // Build the response object with status, message, and error
-    const responseBody = new ApiResponse(status, message, null, error);
+    const responseBody = new ApiResponse(status, message, null, errorMessage);
 
-    // Return the response with the custom structure
+    // Send the response
     response.status(status).json(responseBody);
   }
 }
